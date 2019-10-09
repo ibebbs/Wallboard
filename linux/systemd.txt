@@ -1,0 +1,14 @@
+[Unit]
+Description=Wallboard
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/Wallboard/Wallboard Display:Port=/dev/ttyUSB0 Mqtt:Broker=192.168.1.24
+WorkingDirectory=/usr/bin/Wallboard
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+sudo cp -r Wallboard/ /usr/bin/
+sudo chmod +x /usr/bin/Wallboard/Wallboard
+
+sudo nano /etc/systemd/system/wallboard.service
+
