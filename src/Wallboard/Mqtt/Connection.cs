@@ -17,11 +17,18 @@ namespace Wallboard.Mqtt
 
         ValueTask StopAsync();
 
+        ValueTask PoweredOn();
+
+        ValueTask PoweredOff();
+
         IObservable<Message> Messages { get; }
     }
 
     public class Connection : IConnection
     {
+        private static readonly byte[] OnPayload = Encoding.UTF8.GetBytes("ON");
+        private static readonly byte[] OffPayload = Encoding.UTF8.GetBytes("OFF");
+
         private readonly IOptions<Config> _configuration;
         private readonly ILogger<Connection> _logger;
         private readonly Subject<Message> _messages;
@@ -93,6 +100,20 @@ namespace Wallboard.Mqtt
                 _client.Dispose();
                 _client = null;
             }
+        }
+
+        public async ValueTask PoweredOn()
+        {
+            var message = new MqttApplicationMessage(_configuration.Value.PowerNotificationTopic, OnPayload);
+
+            await _client.PublishAsync(message, MqttQualityOfService.AtLeastOnce);
+        }
+
+        public async ValueTask PoweredOff()
+        {
+            var message = new MqttApplicationMessage(_configuration.Value.PowerNotificationTopic, OffPayload);
+
+            await _client.PublishAsync(message, MqttQualityOfService.AtLeastOnce);
         }
 
         public IObservable<Message> Messages => _messages;

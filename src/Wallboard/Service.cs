@@ -27,6 +27,7 @@ namespace Wallboard
         private async Task<Unit> PowerOn()
         {
             await _controller.PowerOn();
+            await _connection.PoweredOn();
 
             return Unit.Default;
         }
@@ -34,6 +35,7 @@ namespace Wallboard
         private async Task<Unit> PowerOff()
         {
             await _controller.PowerOff();
+            await _connection.PoweredOff();
 
             return Unit.Default;
         }

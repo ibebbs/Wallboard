@@ -8,5 +8,7 @@ namespace Wallboard.Mqtt
         public string Broker { get; set; }
 
         public int Port { get; set; } = 1883;
+
+        public string PowerNotificationTopic { get; set; } = "home/wallboard/power";
     }
 }
