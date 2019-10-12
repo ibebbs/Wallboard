@@ -32,13 +32,24 @@ namespace Wallboard.Occupancy
                 .Where(message => message.Device == "RTCGQ11M_office_shelves" && message.Payload.Contains("\"occupancy\":false"))
                 .Select(_ => State.Abscent);
 
+            // Get illuminance from any of the sensors
+            var illuminance = messages
+                .Where(message => message.Device.StartsWith("RTCGQ11M", StringComparison.OrdinalIgnoreCase))
+                .Select(Presence.Message.Create)
+                .Select(presence => presence.Illuminance);
+
             return Observable
+                // Merge all the state observables ...
                 .Merge(
                     turnOnWhenDoorOpens,
                     turnOnWhenDoorPresenceSensorReportsPresence,
                     turnOnWhenShelfPresenceSensorReportsPresence,
                     turnOffwhenShelfPresenceSensorReportsAbscence)
+                // ... but only allow a State.Present to propagate when illuminance is above 50 ...
+                .WithLatestFrom(illuminance, (s, i) => i > 50 ? s : State.Abscent)
+                // ... debounce to prevent rapid changes ...
                 .Throttle(TimeSpan.FromSeconds(10))
+                // ... and prevent duplicates status' from being emitted ...
                 .DistinctUntilChanged();
         }
     }
