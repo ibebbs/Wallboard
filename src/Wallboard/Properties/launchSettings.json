@@ -6,6 +6,9 @@
         "Wallboard:Mqtt:Broker": "192.168.1.24",
         "Wallboard:Display:Port": "/dev/ttyAMA0"
       }
+    },
+    "Docker": {
+      "commandName": "Docker"
     }
   }
 }
