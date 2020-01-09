@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 namespace Wallboard.Occupancy
 {
     public static class Logic
     {
-        public static IObservable<State> WhenOccupancyChanges(IObservable<Message> messages)
+        public static IObservable<State> WhenOccupancyChanges(IObservable<Message> messages, IScheduler scheduler = null)
         {
+            scheduler = scheduler ?? Scheduler.Default;
+
             // The is a sensor on the door which reports when the door is opened or closed
             // Use this to turn the wall board on
             var turnOnWhenDoorOpens = messages
@@ -32,9 +35,11 @@ namespace Wallboard.Occupancy
                 .Select(_ => State.Abscent);
 
             // Get illuminance from any of the sensors
-            var illuminance = messages
-                .Where(message => message.Device.StartsWith("RTCGQ11M", StringComparison.OrdinalIgnoreCase))
-                .Select(Presence.Message.Create)
+            var illuminance = Observable
+                .Defer(() => messages
+                    .Where(message => message.Device.StartsWith("RTCGQ11M", StringComparison.OrdinalIgnoreCase))
+                    .Select(Presence.Message.Create))
+                .Retry()
                 .Select(presence => presence.Illuminance);
 
             return Observable
@@ -47,7 +52,7 @@ namespace Wallboard.Occupancy
                 // ... but only allow a State.Present to propagate when illuminance is above 50 ...
                 .WithLatestFrom(illuminance, (s, i) => i > 50 ? s : State.Abscent)
                 // ... debounce to prevent rapid changes ...
-                .Throttle(TimeSpan.FromSeconds(10))
+                .Throttle(TimeSpan.FromSeconds(10), scheduler)
                 // ... and prevent duplicates status' from being emitted ...
                 .DistinctUntilChanged();
         }
