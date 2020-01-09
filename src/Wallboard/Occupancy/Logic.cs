@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Reactive.Linq;
 
 namespace Wallboard.Occupancy
