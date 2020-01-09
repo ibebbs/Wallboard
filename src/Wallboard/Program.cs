@@ -32,6 +32,7 @@ namespace Wallboard
                         services.AddSingleton<Display.IController, Display.Controller>();
                         services.AddOptions<Mqtt.Config>().ValidateDataAnnotations().Bind(hostContext.Configuration.GetSection("Mqtt"));
                         services.AddSingleton<Mqtt.IConnection, Mqtt.Connection>();
+                        services.AddOptions<Occupancy.Config>().ValidateDataAnnotations().Bind(hostContext.Configuration.GetSection("Occupancy"));
                         services.AddHostedService<Service>();
                     })
                 .ConfigureLogging((hostContext, logging) => logging.AddConsole());

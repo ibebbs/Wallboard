@@ -6,7 +6,7 @@ namespace Wallboard.Occupancy
 {
     public static class Logic
     {
-        public static IObservable<State> WhenOccupancyChanges(IObservable<Message> messages, IScheduler scheduler = null)
+        public static IObservable<State> WhenOccupancyChanges(IObservable<Message> messages, Config config, IScheduler scheduler = null)
         {
             scheduler = scheduler ?? Scheduler.Default;
 
@@ -50,9 +50,9 @@ namespace Wallboard.Occupancy
                     turnOnWhenShelfPresenceSensorReportsPresence,
                     turnOffwhenShelfPresenceSensorReportsAbscence)
                 // ... but only allow a State.Present to propagate when illuminance is above 50 ...
-                .WithLatestFrom(illuminance, (s, i) => i > 50 ? s : State.Abscent)
+                .WithLatestFrom(illuminance, (s, i) => i > config.MinimumLuminance ? s : State.Abscent)
                 // ... debounce to prevent rapid changes ...
-                .Throttle(TimeSpan.FromSeconds(10), scheduler)
+                .Throttle(TimeSpan.FromSeconds(config.DebounceInSeconds), scheduler)
                 // ... and prevent duplicates status' from being emitted ...
                 .DistinctUntilChanged();
         }

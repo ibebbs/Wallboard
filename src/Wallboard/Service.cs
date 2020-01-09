@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Reactive;
@@ -13,14 +14,16 @@ namespace Wallboard
     {
         private readonly Display.IController _controller;
         private readonly Mqtt.IConnection _connection;
+        private readonly IOptions<Occupancy.Config> _options;
         private readonly ILogger<Service> _logger;
 
         private IDisposable _subscription;
 
-        public Service(Display.IController controller, Mqtt.IConnection connection, ILogger<Service> logger)
+        public Service(Display.IController controller, Mqtt.IConnection connection, IOptions<Occupancy.Config> options, ILogger<Service> logger)
         {
             _controller = controller;
             _connection = connection;
+            _options = options;
             _logger = logger;
         }
 
@@ -48,7 +51,7 @@ namespace Wallboard
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _subscription = Occupancy.Logic
-                .WhenOccupancyChanges(_connection.Messages)
+                .WhenOccupancyChanges(_connection.Messages, _options.Value)
                 .Do(Log)
                 .Select(occupancy => occupancy == Occupancy.State.Abscent ? new Func<Task<Unit>>(PowerOff) : new Func<Task<Unit>>(PowerOn))
                 .SelectMany(async action => await action())
