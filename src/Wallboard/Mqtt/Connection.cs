@@ -116,6 +116,6 @@ namespace Wallboard.Mqtt
             await _client.PublishAsync(message, MqttQualityOfService.AtLeastOnce);
         }
 
-        public IObservable<Message> Messages => _messages;
+        public IObservable<Message> Messages => _messages ;
     }
 }
